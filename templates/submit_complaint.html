@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Complaint{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h2 class="mb-4 text-center">Submit a New Complaint</h2>
+
+        <form class="card p-4" method="POST" action="{{ url_for('submit_complaint') }}">
+
+            <div class="mb-3">
+                <label for="location" class="form-label">Location</label>
+                <input type="text" class="form-control" id="location" name="location"
+                    placeholder="e.g., Corner of Main St. & Park Ave." required>
+                <div class="form-text">
+                    Please be as specific as possible (address, landmark, etc.).
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description of Issue</label>
+                <textarea class="form-control" id="description" name="description" rows="5"
+                    placeholder="Describe the issue (e.g., 'Broken streetlight', 'Large pothole', 'Overflowing trash bin')."
+                    required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Submit Complaint</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
