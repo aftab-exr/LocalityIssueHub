@@ -1,10 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
-from functools import wraps # We need this for our login decorator
-
-# --- Updated Model Imports ---
+from functools import wraps 
 from models import db, User, Complaint 
-
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -17,9 +14,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # --- Initialize Database ---
 db.init_app(app)
 
-# --- NEW: Login Required Decorator ---
-# This is a small helper function (a "decorator") we can add to any route
-# to make sure the user is logged in.
+# --- Decorators ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -29,83 +24,126 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# --- NEW: Admin Required Decorator ---
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check if user is logged in
+        if 'user_id' not in session:
+            flash('You must be logged in to view this page.', 'danger')
+            return redirect(url_for('login'))
+        
+        # Get user's role from the database
+        user = User.query.get(session['user_id'])
+        if user.role != 'admin':
+            flash('You do not have permission to access this page.', 'danger')
+            return redirect(url_for('dashboard')) # Redirect non-admins
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
 # --- Routes ---
 
 @app.route('/')
 def index():
-    """ 
-    This is the homepage.
-    If the user is logged in, redirect them to the dashboard.
-    """
     if 'user_id' in session:
-        return redirect(url_for('dashboard'))
+        user = User.query.get(session['user_id'])
+        if user.role == 'admin':
+            return redirect(url_for('admin_dashboard'))
+        else:
+            return redirect(url_for('dashboard'))
     return render_template('index.html')
 
-# --- NEW: Dashboard Route ---
+# --- User Dashboard ---
 @app.route('/dashboard')
-@login_required  # <-- This secures the route
+@login_required
 def dashboard():
-    """
-    This is the user's main dashboard.
-    It shows a list of their submitted complaints.
-    """
-    # Find the user's complaints from the database
-    # This uses the 'complaints' relationship we defined in models.py
     user = User.query.get(session['user_id'])
-    user_complaints = user.complaints
     
+    # --- NEW: Redirect admin users away from user dashboard ---
+    if user.role == 'admin':
+        flash('Admins are redirected to the admin dashboard.', 'info')
+        return redirect(url_for('admin_dashboard'))
+        
+    user_complaints = user.complaints
     return render_template('dashboard.html', complaints=user_complaints)
 
-# --- NEW: Submit Complaint Route ---
 @app.route('/submit_complaint', methods=['GET', 'POST'])
-@login_required # <-- This secures the route
+@login_required
 def submit_complaint():
-    """
-    Shows the complaint form (GET) and handles the submission (POST).
-    """
     if request.method == 'POST':
-        # Get data from the form
         location = request.form.get('location')
         description = request.form.get('description')
-
-        # Create a new Complaint object
         new_complaint = Complaint(
             location=location,
             description=description,
-            user_id=session['user_id'] # Assign it to the logged-in user
-            # Status defaults to 'Pending'
+            user_id=session['user_id']
         )
-
         try:
             db.session.add(new_complaint)
             db.session.commit()
             flash('Complaint submitted successfully!', 'success')
-            return redirect(url_for('dashboard')) # Go back to dashboard
+            return redirect(url_for('dashboard'))
         except Exception as e:
             db.session.rollback()
             flash(f'An error occurred: {e}', 'danger')
             return redirect(url_for('submit_complaint'))
-
-    # If it's a GET request, just show the form page
     return render_template('submit_complaint.html')
 
+# --- NEW: Admin Dashboard Route ---
+@app.route('/admin')
+@admin_required  # <-- Secures this route!
+def admin_dashboard():
+    """
+    Shows all complaints from all users.
+    We join with the User model to also get the submitter's name.
+    """
+    all_complaints = db.session.query(Complaint, User).join(User, Complaint.user_id == User.user_id).order_by(Complaint.date_submitted.desc()).all()
+    
+    # all_complaints is now a list of tuples: [(Complaint_Object, User_Object), ...]
+    
+    return render_template('admin_dashboard.html', complaints_with_users=all_complaints)
 
-# --- Authentication Routes (No Changes) ---
+# --- NEW: Admin Update Status Route ---
+@app.route('/admin/update_status/<int:complaint_id>', methods=['POST'])
+@admin_required
+def update_complaint_status(complaint_id):
+    """
+    Handles the form POST from the admin dashboard to update a status.
+    """
+    complaint = Complaint.query.get_or_404(complaint_id)
+    new_status = request.form.get('status')
+
+    if new_status not in ['Pending', 'In-Progress', 'Resolved']:
+        flash('Invalid status selected.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    try:
+        complaint.status = new_status
+        db.session.commit()
+        flash(f'Complaint #{complaint_id} status updated to "{new_status}".', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'An error occurred: {e}', 'danger')
+    
+    return redirect(url_for('admin_dashboard'))
+
+
+# --- Authentication Routes (Login route is slightly modified) ---
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # ... (No changes here, code is identical) ...
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
         phone = request.form.get('phone')
         address = request.form.get('address')
         password = request.form.get('password')
-
         user_exists = User.query.filter_by(email=email).first()
         if user_exists:
             flash('Email already registered.', 'danger')
             return redirect(url_for('register'))
-
         hashed_password = generate_password_hash(password)
         new_user = User(
             name=name,
@@ -114,7 +152,6 @@ def register():
             address=address,
             password=hashed_password
         )
-
         try:
             db.session.add(new_user)
             db.session.commit()
@@ -124,7 +161,6 @@ def register():
             db.session.rollback()
             flash(f'An error occurred: {e}', 'danger')
             return redirect(url_for('register'))
-
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -132,15 +168,20 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.user_id
             session['user_name'] = user.name
+            session['user_role'] = user.role
+            
             flash(f'Welcome back, {user.name}!', 'success')
-            # --- UPDATED: Redirect to dashboard after login ---
-            return redirect(url_for('dashboard'))
+            
+            # --- MODIFIED: Redirect based on role ---
+            if user.role == 'admin':
+                return redirect(url_for('admin_dashboard'))
+            else:
+                return redirect(url_for('dashboard'))
         else:
             flash('Invalid email or password. Please try again.', 'danger')
             return redirect(url_for('login'))
