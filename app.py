@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps 
-from models import db, User, Complaint 
+from models import db, User, Complaint, LocalAuthority
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -165,6 +165,56 @@ def admin_reports():
         report_data=report_data, 
         user_activity_data=user_activity_data
     )
+# ... after admin_reports() function ...
+
+# --- NEW: Admin Directory Management ---
+@app.route('/admin/directory', methods=['GET', 'POST'])
+@admin_required
+def admin_directory():
+    """
+    Admin page to add and view directory contacts.
+    """
+    if request.method == 'POST':
+        # Handle the form submission
+        new_contact = LocalAuthority(
+            dept_name=request.form.get('dept_name'),
+            contact_name=request.form.get('contact_name'),
+            phone=request.form.get('phone'),
+            email=request.form.get('email'),
+            address=request.form.get('address')
+        )
+        try:
+            db.session.add(new_contact)
+            db.session.commit()
+            flash('New contact added to directory!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An error occurred: {e}', 'danger')
+
+        return redirect(url_for('admin_directory'))
+
+    # For a GET request, show the page with all contacts
+    all_contacts = LocalAuthority.query.order_by(LocalAuthority.dept_name).all()
+    return render_template('admin_directory.html', contacts=all_contacts)
+
+# --- NEW: Delete Directory Contact ---
+@app.route('/admin/directory/delete/<int:contact_id>')
+@admin_required
+def delete_directory_contact(contact_id):
+    """
+    Deletes a contact from the directory.
+    """
+    contact = LocalAuthority.query.get_or_404(contact_id)
+    try:
+        db.session.delete(contact)
+        db.session.commit()
+        flash('Contact deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'An error occurred: {e}', 'danger')
+
+    return redirect(url_for('admin_directory'))
+
 # --- Authentication Routes ---
 
 @app.route('/register', methods=['GET', 'POST'])

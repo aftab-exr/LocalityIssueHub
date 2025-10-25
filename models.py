@@ -43,3 +43,16 @@ class Complaint(db.Model):
 
     def __repr__(self):
         return f'<Complaint {self.complaint_id} ({self.status})>'
+# --- NEW: Local Authority Model ---
+class LocalAuthority(db.Model):
+    __tablename__ = 'local_authority'
+
+    local_au_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dept_name = db.Column(db.String(100), nullable=False)
+    contact_name = db.Column(db.String(100), nullable=True) # e.g., "Main Office"
+    phone = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(100), nullable=True)
+    address = db.Column(db.Text, nullable=True)
+
+    def __repr__(self):
+        return f'<LocalAuthority {self.dept_name}>'
