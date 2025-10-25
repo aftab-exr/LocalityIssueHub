@@ -24,7 +24,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- NEW: Admin Required Decorator ---
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -60,7 +59,6 @@ def index():
 def dashboard():
     user = User.query.get(session['user_id'])
     
-    # --- NEW: Redirect admin users away from user dashboard ---
     if user.role == 'admin':
         flash('Admins are redirected to the admin dashboard.', 'info')
         return redirect(url_for('admin_dashboard'))
@@ -90,27 +88,17 @@ def submit_complaint():
             return redirect(url_for('submit_complaint'))
     return render_template('submit_complaint.html')
 
-# --- NEW: Admin Dashboard Route ---
+# --- Admin Dashboard Route ---
 @app.route('/admin')
-@admin_required  # <-- Secures this route!
+@admin_required
 def admin_dashboard():
-    """
-    Shows all complaints from all users.
-    We join with the User model to also get the submitter's name.
-    """
     all_complaints = db.session.query(Complaint, User).join(User, Complaint.user_id == User.user_id).order_by(Complaint.date_submitted.desc()).all()
-    
-    # all_complaints is now a list of tuples: [(Complaint_Object, User_Object), ...]
-    
     return render_template('admin_dashboard.html', complaints_with_users=all_complaints)
 
-# --- NEW: Admin Update Status Route ---
+# --- Admin Update Status Route ---
 @app.route('/admin/update_status/<int:complaint_id>', methods=['POST'])
 @admin_required
 def update_complaint_status(complaint_id):
-    """
-    Handles the form POST from the admin dashboard to update a status.
-    """
     complaint = Complaint.query.get_or_404(complaint_id)
     new_status = request.form.get('status')
 
@@ -129,11 +117,58 @@ def update_complaint_status(complaint_id):
     return redirect(url_for('admin_dashboard'))
 
 
-# --- Authentication Routes (Login route is slightly modified) ---
+# --- Admin Reports Route (UPDATED) ---
+@app.route('/admin/reports')
+@admin_required
+def admin_reports():
+    """
+    Displays the report generation page.
+    """
+
+    # --- 1. Complaint Status Report (Same as before) ---
+    status_counts = db.session.query(
+        Complaint.status, 
+        db.func.count(Complaint.status)
+    ).group_by(Complaint.status).all()
+
+    report_data = {
+        'pending': 0,
+        'in_progress': 0,
+        'resolved': 0
+    }
+
+    for status, count in status_counts:
+        if status == 'Pending':
+            report_data['pending'] = count
+        elif status == 'In-Progress':
+            report_data['in_progress'] = count
+        elif status == 'Resolved':
+            report_data['resolved'] = count
+
+    # --- 2. NEW: User Activity Report ---
+    # This query joins User and Complaint, groups by User,
+    # and counts how many complaints each user has.
+    user_activity_data = db.session.query(
+        User.user_id,
+        User.name,
+        User.email,
+        User.role,
+        db.func.count(Complaint.complaint_id).label('complaint_count')
+    ).outerjoin(Complaint, User.user_id == Complaint.user_id) \
+     .group_by(User.user_id) \
+     .order_by(db.func.count(Complaint.complaint_id).desc()) \
+     .all()
+
+    # Pass BOTH report_data AND user_activity_data to the template
+    return render_template(
+        'admin_reports.html', 
+        report_data=report_data, 
+        user_activity_data=user_activity_data
+    )
+# --- Authentication Routes ---
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # ... (No changes here, code is identical) ...
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
@@ -177,7 +212,6 @@ def login():
             
             flash(f'Welcome back, {user.name}!', 'success')
             
-            # --- MODIFIED: Redirect based on role ---
             if user.role == 'admin':
                 return redirect(url_for('admin_dashboard'))
             else:
@@ -192,6 +226,7 @@ def login():
 def logout():
     session.pop('user_id', None)
     session.pop('user_name', None)
+    session.pop('user_role', None) # <-- THIS IS THE FIX
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
