@@ -165,7 +165,6 @@ def admin_reports():
         report_data=report_data, 
         user_activity_data=user_activity_data
     )
-# ... after admin_reports() function ...
 
 # --- NEW: Admin Directory Management ---
 @app.route('/admin/directory', methods=['GET', 'POST'])
@@ -214,6 +213,20 @@ def delete_directory_contact(contact_id):
         flash(f'An error occurred: {e}', 'danger')
 
     return redirect(url_for('admin_directory'))
+
+# --- NEW: Public Directory Page ---
+@app.route('/directory')
+@login_required
+def directory():
+    """
+    Displays the public contact directory for all logged-in users.
+    """
+    # Fetch all contacts from the database
+    all_contacts = LocalAuthority.query.order_by(LocalAuthority.dept_name).all()
+
+    # Render the new template, passing in the list of contacts
+    return render_template('directory.html', contacts=all_contacts)
+
 
 # --- Authentication Routes ---
 

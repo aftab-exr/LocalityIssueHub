@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Government Directory{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Government Contact Directory</h2>
+<p class="lead mb-4">Find contact information for local government departments and services.</p>
+
+<div class="row">
+    {% if contacts %}
+        {% for contact in contacts %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header fs-5 fw-bold">
+                    {{ contact.dept_name }}
+                </div>
+                <div class="card-body">
+                    {% if contact.contact_name %}
+                        <h6 class="card-title">{{ contact.contact_name }}</h6>
+                    {% endif %}
+
+                    <p class="card-text mb-1">
+                        <strong>Phone:</strong> {{ contact.phone }}
+                    </p>
+
+                    {% if contact.email %}
+                    <p class="card-text mb-1">
+                        <strong>Email:</strong> {{ contact.email }}
+                    </p>
+                    {% endif %}
+
+                    {% if contact.address %}
+                    <p class="card-text mt-3">
+                        <strong>Address:</strong><br>
+                        {{ contact.address }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col">
+            <p class="text-center text-muted fs-4">The directory is empty. Contacts will be added by an administrator soon.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
