@@ -14,11 +14,13 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='resident') 
     date_registered = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
-    # --- NEW RELATIONSHIP ---
-    # This links the User to their Complaints.
-    # 'complaints' is a 'virtual' field to easily access all complaints for a user.
+
+    # Relationships
     complaints = db.relationship('Complaint', backref='submitter', lazy=True)
+
+    # --- NEW RELATIONSHIPS ---
+    posts = db.relationship('ForumPost', backref='author', lazy=True, cascade="all, delete-orphan")
+    comments = db.relationship('ForumComment', backref='author', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<User {self.name} ({self.email})>'
@@ -56,3 +58,35 @@ class LocalAuthority(db.Model):
 
     def __repr__(self):
         return f'<LocalAuthority {self.dept_name}>'
+# --- NEW: Forum Post Model ---
+
+class ForumPost(db.Model):
+    __tablename__ = 'forum_post'
+    post_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    # Foreign Key to User
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+
+    # Relationship to Comments
+    # 'cascade' means if a post is deleted, all its comments are deleted too.
+    comments = db.relationship('ForumComment', backref='post', lazy=True, cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f'<ForumPost {self.title}>'
+
+class ForumComment(db.Model):
+    __tablename__ = 'forum_comment'
+    comment_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    content = db.Column(db.Text, nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    # Foreign Key to User
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    # Foreign Key to Post
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_post.post_id'), nullable=False)
+
+    def __repr__(self):
+        return f'<ForumComment {self.comment_id}>'

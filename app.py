@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps 
-from models import db, User, Complaint, LocalAuthority
+from models import db, User, Complaint, LocalAuthority, ForumPost, ForumComment
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -227,6 +227,17 @@ def directory():
     # Render the new template, passing in the list of contacts
     return render_template('directory.html', contacts=all_contacts)
 
+
+# --- NEW: Forum Homepage (Placeholder) ---
+@app.route('/forum')
+@login_required
+def forum():
+    """
+    Displays the main forum page (placeholder).
+    """
+    # We will build this page in the next step
+    # For now, it just shows text
+    return render_template('forum.html') # We will create this file next
 
 # --- Authentication Routes ---
 
