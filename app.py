@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import os
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps 
+from datetime import datetime
 from models import db, User, Complaint, LocalAuthority, ForumPost, ForumComment, Event
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -309,63 +310,75 @@ def create_post():
     # If it's a GET request, just show the form
     return render_template('create_post.html')
 
-# --- NEW: Post Detail Page (View Post & Add Comment) ---
-@app.route('/forum/post/<int:post_id>', methods=['GET', 'POST'])
-@login_required
-def post_detail(post_id):
-    """
-    GET: Shows a single post and all its comments.
-    POST: Handles adding a new comment to that post.
-    """
-    # Find the post by its ID, or return a 404 error
-    post = ForumPost.query.get_or_404(post_id)
-
-    if request.method == 'POST':
-        # This is an "Add Comment" submission
-        content = request.form.get('content')
-
-        if not content:
-            flash('Comment content cannot be empty.', 'danger')
-        else:
-            new_comment = ForumComment(
-                content=content,
-                user_id=session['user_id'], # Logged-in user
-                post_id=post.post_id        # This specific post
-            )
-            try:
-                db.session.add(new_comment)
-                db.session.commit()
-                flash('Comment added successfully!', 'success')
-            except Exception as e:
-                db.session.rollback()
-                flash(f'An error occurred: {e}', 'danger')
-
-        # Redirect back to the same page (refreshes the comment list)
-        return redirect(url_for('post_detail', post_id=post.post_id))
-
-    # If it's a GET request, just show the post and its comments
-    return render_template('post_detail.html', post=post)
-
-# --- NEW: Event Calendar (Public Page) ---
+# --- UPDATED: Event Calendar (Public Page) ---
 @app.route('/events')
 @login_required
 def events_calendar():
     """
     Displays the public event calendar.
     """
-    # Placeholder
-    return render_template('events_calendar.html') # We will create this
+    # Fetch all upcoming events, ordered by the soonest first
+    all_events = Event.query.order_by(Event.date.asc()).all()
 
-# --- NEW: Admin Event Management ---
+    # Render the new template, passing in the list of events
+    return render_template('events_calendar.html', events=all_events)
+
+# --- Admin Event Management ---
 @app.route('/admin/events', methods=['GET', 'POST'])
 @admin_required
 def admin_events():
     """
-    Admin page to add and delete events.
+    Admin page to add and view events.
     """
-    # Placeholder
-    return render_template('admin_events.html') # We will create this
+    if request.method == 'POST':
+        # Handle the form submission
+        name = request.form.get('name')
+        location = request.form.get('location')
+        description = request.form.get('description')
+        date_string = request.form.get('date')
 
+        # Convert the form's date string into a Python datetime object
+        event_date = datetime.fromisoformat(date_string)
+
+        new_event = Event(
+            name=name,
+            location=location,
+            description=description,
+            date=event_date,
+            user_id=session['user_id'] # The admin who created it
+        )
+        try:
+            db.session.add(new_event)
+            db.session.commit()
+            flash('New event added!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An error occurred: {e}', 'danger')
+
+        return redirect(url_for('admin_events'))
+
+    # For a GET request, show the page with all events
+    # Order by date so the soonest events are first
+    all_events = Event.query.order_by(Event.date.asc()).all()
+    return render_template('admin_events.html', events=all_events)
+
+# --- NEW: Delete Event Route ---
+@app.route('/admin/events/delete/<int:event_id>')
+@admin_required
+def delete_event(event_id):
+    """
+    Deletes an event.
+    """
+    event = Event.query.get_or_404(event_id)
+    try:
+        db.session.delete(event)
+        db.session.commit()
+        flash('Event deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'An error occurred: {e}', 'danger')
+
+    return redirect(url_for('admin_events'))
 
 # --- Authentication Routes ---
 
