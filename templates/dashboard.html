@@ -5,61 +5,64 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">My Dashboard</h2>
-    <a href="{{ url_for('submit_complaint') }}" class="btn btn-primary">
-        + Submit New Complaint
+    <a href="{{ url_for('submit_complaint') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-lg"></i> Submit New Complaint
     </a>
 </div>
 
-<h4>My Submitted Issues</h4>
-<hr>
+<div class="row">
 
-<div class="card">
-    <div class="card-body">
-        {% if complaints %}
-        <table class="table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Date Submitted</th>
-                    <th scope="col">Location</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Image</th>
-                    <th scope="col">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for complaint in complaints %}
-                <tr>
-                    <th scope="row">{{ complaint.complaint_id }}</th>
-                    <td>{{ complaint.date_submitted.strftime('%Y-%m-%d') }}</td>
-                    <td>{{ complaint.location }}</td>
-                    <td>{{ complaint.description[:50] }}...</td>
+    {% if complaints %}
+    {% for complaint in complaints %}
+    <div class="col-md-6 col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Status:</strong>
+                <span>
+                    {% if complaint.status == 'Pending' %}
+                    <span class="badge bg-warning text-dark">{{ complaint.status }}</span>
+                    {% elif complaint.status == 'Resolved' %}
+                    <span class="badge bg-success">{{ complaint.status }}</span>
+                    {% else %}
+                    <span class="badge bg-info">{{ complaint.status }}</span>
+                    {% endif %}
+                </span>
+            </div>
 
-                    <td>
-                        {% if complaint.image_filename %}
-                        <a href="{{ url_for('static', filename='uploads/' + complaint.image_filename) }}"
-                            target="_blank">View</a>
-                        {% else %}
-                        N/A
-                        {% endif %}
-                    </td>
+            <div class="card-body">
+                <h5 class="card-title">{{ complaint.location }}</h5>
+                <p class="card-text">{{ complaint.description }}</p>
+            </div>
 
-                    <td>
-                        {% if complaint.status == 'Pending' %}
-                        <span class="badge bg-warning text-dark">{{ complaint.status }}</span>
-                        {% elif complaint.status == 'Resolved' %}
-                        <span class="badge bg-success">{{ complaint.status }}</span>
-                        {% else %}
-                        <span class="badge bg-info">{{ complaint.status }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="text-center text-muted">You have not submitted any complaints yet.</p>
-        {% endif %}
+            <div class="card-footer text-muted d-flex justify-content-between align-items-center">
+                <span>
+                    Submitted: {{ complaint.date_submitted.strftime('%Y-%m-%d') }}
+                </span>
+                <span>
+                    {% if complaint.image_filename %}
+                    <a href="{{ url_for('static', filename='uploads/' + complaint.image_filename) }}" target="_blank">
+                        <i class="bi bi-paperclip"></i> View Image
+                    </a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
     </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="col-12">
+        <div class="card text-center">
+            <div class="card-body">
+                <h4 class="card-title">No Complaints Submitted</h4>
+                <p class="card-text text-muted">You have not submitted any complaints yet. Get started by clicking the
+                    button below!</p>
+                <a href="{{ url_for('submit_complaint') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Submit Your First Complaint
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
