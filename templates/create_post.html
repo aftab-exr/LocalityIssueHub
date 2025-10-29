@@ -3,22 +3,27 @@
 {% block title %}Create New Post{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Create a New Forum Post</h2>
-
-<div class="card">
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('create_post') }}">
-            <div class="mb-3">
-                <label for="title" class="form-label">Title</label>
-                <input type="text" class="form-control" id="title" name="title" required>
+<div class="row">
+    <div class="col-md-10 col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Create a New Forum Post</h2>
             </div>
-            <div class="mb-3">
-                <label for="content" class="form-label">Content</label>
-                <textarea class="form-control" id="content" name="content" rows="8" required></textarea>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_post') }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="8" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Post</button>
+                    <a href="{{ url_for('forum') }}" class="btn btn-secondary">Cancel</a>
+                </form>
             </div>
-            <button type="submit" class="btn btn-primary">Submit Post</button>
-            <a href="{{ url_for('forum') }}" class="btn btn-secondary">Cancel</a>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}

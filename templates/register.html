@@ -5,50 +5,52 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 col-lg-6 mx-auto">
-
-        <h2 class="mb-4 text-center">Create Your Account</h2>
-
-        <form class="card p-4" method="POST" action="{{ url_for('register') }}">
-
-            <div class="mb-3">
-                <label for="name" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0 text-center">Create Your Account</h2>
             </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label"><i class="bi bi-person-badge-fill"></i> Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">Email Address</label>
-                <input type="email" class="form-control" id="email" name="email" required>
+                    <div class="mb-3">
+                        <label for="email" class="form-label"><i class="bi bi-envelope-fill"></i> Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label"><i class="bi bi-key-fill"></i> Password</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                            title="Must contain at least one number, one uppercase and lowercase letter, and at least 8 or more characters"
+                            required>
+                        <div class="form-text">
+                            Min. 8 characters, with 1 uppercase, 1 lowercase, and 1 number.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label"><i class="bi bi-telephone-fill"></i> Phone Number
+                            (Optional)</label>
+                        <input type="tel" class="form-control" id="phone" name="phone">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label"><i class="bi bi-house-fill"></i> Address
+                            (Optional)</label>
+                        <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">Register</button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password"
-                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                    title="Must contain at least one number, one uppercase and lowercase letter, and at least 8 or more characters"
-                    required>
-                <div class="form-text">
-                    Min. 8 characters, with 1 uppercase, 1 lowercase, and 1 number.
-                </div>
+            <div class="card-footer text-center">
+                <small>Already have an account? <a href="{{ url_for('login') }}">Login here</a></small>
             </div>
-
-            <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number (Optional)</label>
-                <input type="tel" class="form-control" id="phone" name="phone">
-            </div>
-
-            <div class="mb-3">
-                <label for="address" class="form-label">Address (Optional)</label>
-                <textarea class="form-control" id="address" name="address" rows="3"></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100">Register</button>
-
-        </form>
-
-        <p class="text-center mt-3">
-            Already have an account? <a href="{{ url_for('login') }}">Login</a>
-        </p>
-
+        </div>
     </div>
 </div>
 {% endblock %}
