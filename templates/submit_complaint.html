@@ -4,38 +4,48 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-8 mx-auto">
-        <h2 class="mb-4 text-center">Submit a New Complaint</h2>
-
-        <form class="card p-4" method="POST" action="{{ url_for('submit_complaint') }}" enctype="multipart/form-data">
-
-            <div class="mb-3">
-                <label for="location" class="form-label">Location</label>
-                <input type="text" class="form-control" id="location" name="location"
-                    placeholder="e.g., Corner of Main St. & Park Ave." required>
-                <div class="form-text">
-                    Please be as specific as possible (address, landmark, etc.).
-                </div>
+    <div class="col-md-10 col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0 text-center">Submit a New Complaint</h2>
             </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('submit_complaint') }}" enctype="multipart/form-data">
 
-            <div class="mb-3">
-                <label for="description" class="form-label">Description of Issue</label>
-                <textarea class="form-control" id="description" name="description" rows="5"
-                    placeholder="Describe the issue (e.g., 'Broken streetlight', 'Large pothole', 'Overflowing trash bin')."
-                    required></textarea>
+                    <div class="mb-3">
+                        <label for="location" class="form-label"><i class="bi bi-geo-alt-fill"></i> Location</label>
+                        <input type="text" class="form-control" id="location" name="location"
+                            placeholder="e.g., Corner of Main St. & Park Ave." required>
+                        <div class="form-text">
+                            Please be as specific as possible (address, landmark, etc.).
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label"><i class="bi bi-pencil-fill"></i> Description of
+                            Issue</label>
+                        <textarea class="form-control" id="description" name="description" rows="5"
+                            placeholder="Describe the issue (e.g., 'Broken streetlight', 'Large pothole', 'Overflowing trash bin')."
+                            required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label"><i class="bi bi-camera-fill"></i> Upload Image
+                            (Optional)</label>
+                        <input class="form-control" type="file" id="image" name="image"
+                            accept="image/png, image/jpeg, image/jpg">
+                        <div class="form-text">
+                            Accepted formats: PNG, JPG, JPEG.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">Submit Complaint</button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label for="image" class="form-label">Upload Image (Optional)</label>
-                <input class="form-control" type="file" id="image" name="image"
-                    accept="image/png, image/jpeg, image/jpg">
-                <div class="form-text">
-                    Accepted formats: PNG, JPG, JPEG.
-                </div>
+            <div class="card-footer text-center">
+                <small>Your submission will be sent to the relevant authorities for review.</small>
             </div>
-
-            <button type="submit" class="btn btn-primary w-100">Submit Complaint</button>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}
