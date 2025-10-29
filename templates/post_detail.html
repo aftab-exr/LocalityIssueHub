@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h2 class="card-title">{{ post.title }}</h2>
+        <h6 class="card-subtitle mb-2 text-muted">
+            By {{ post.author.name }} on {{ post.date_posted.strftime('%Y-%m-%d') }}
+        </h6>
+        <hr>
+        <p class="card-text" style="white-space: pre-wrap;">{{ post.content }}</p>
+    </div>
+</div>
+
+<h4 class="mb-3">Leave a Comment</h4>
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('post_detail', post_id=post.post_id) }}">
+            <div class="mb-3">
+                <textarea class="form-control" id="content" name="content" rows="4"
+                    placeholder="Write your comment here..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Comment</button>
+        </form>
+    </div>
+</div>
+
+<h4 class="mb-3">Comments ({{ post.comments|length }})</h4>
+{% if post.comments %}
+{% for comment in post.comments %}
+<div class="card mb-3">
+    <div class="card-body">
+        <p style="white-space: pre-wrap;">{{ comment.content }}</p>
+        <small class="text-muted">
+            By {{ comment.author.name }} on {{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}
+        </small>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<p class="text-muted">No comments yet. Be the first to respond!</p>
+{% endif %}
+
+<a href="{{ url_for('forum') }}" class="btn btn-secondary mt-3">&laquo; Back to Forum</a>
+
+{% endblock %}

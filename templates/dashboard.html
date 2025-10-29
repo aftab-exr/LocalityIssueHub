@@ -23,6 +23,7 @@
                     <th scope="col">Date Submitted</th>
                     <th scope="col">Location</th>
                     <th scope="col">Description</th>
+                    <th scope="col">Image</th>
                     <th scope="col">Status</th>
                 </tr>
             </thead>
@@ -33,6 +34,16 @@
                     <td>{{ complaint.date_submitted.strftime('%Y-%m-%d') }}</td>
                     <td>{{ complaint.location }}</td>
                     <td>{{ complaint.description[:50] }}...</td>
+
+                    <td>
+                        {% if complaint.image_filename %}
+                        <a href="{{ url_for('static', filename='uploads/' + complaint.image_filename) }}"
+                            target="_blank">View</a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+
                     <td>
                         {% if complaint.status == 'Pending' %}
                         <span class="badge bg-warning text-dark">{{ complaint.status }}</span>

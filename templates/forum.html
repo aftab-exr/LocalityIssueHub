@@ -5,15 +5,32 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Community Forum</h2>
-    <a href="#" class="btn btn-primary">
+    <a href="{{ url_for('create_post') }}" class="btn btn-primary">
         + Create New Post
     </a>
 </div>
 
-<div class="card">
-    <div class="card-body text-center text-muted">
-        <p class="fs-4">The forum is under construction.</p>
-        <p>We will build the post list here soon!</p>
+<div class="list-group">
+    {% if posts %}
+    {% for post in posts %}
+    <a href="{{ url_for('post_detail', post_id=post.post_id) }}"
+        class="list-group-item list-group-item-action flex-column align-items-start">
+        <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ post.title }}</h5>
+            <small>{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+        </div>
+        <p class="mb-1">By {{ post.author.name }}</p>
+        <small>Comments: {{ post.comments|length }}</small>
+    </a>
+    {% endfor %}
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center text-muted">
+            <p class="fs-4">No posts found.</p>
+            <p>Be the first to create one!</p>
+        </div>
     </div>
+    {% endif %}
 </div>
+
 {% endblock %}

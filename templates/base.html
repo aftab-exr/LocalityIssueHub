@@ -30,12 +30,18 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin_directory') }}">Manage Directory</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_events') }}">Manage Events</a>
+                    </li>
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('dashboard') }}">My Dashboard</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('directory') }}">Directory</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('events_calendar') }}">Events</a>
                     </li>
                     {% endif %}
                     <li class="nav-item">

@@ -25,26 +25,24 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.name} ({self.email})>'
 
-# --- NEW COMPLAINT MODEL ---
+# --- COMPLAINT MODEL ---
 class Complaint(db.Model):
     __tablename__ = 'complaint'
-    
+
     complaint_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     description = db.Column(db.Text, nullable=False)
     location = db.Column(db.String(255), nullable=False)
-    
-    # We'll use a string for status: 'Pending', 'In-Progress', 'Resolved'
+
+    # --- ADD THIS NEW LINE ---
+    image_filename = db.Column(db.String(255), nullable=True) # Matches the DB
+
     status = db.Column(db.String(50), nullable=False, default='Pending')
-    
     date_submitted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
-    # --- NEW FOREIGN KEY ---
-    # This is the 'link' to the User table.
-    # It says this column must match a 'user_id' from the 'user' table.
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
 
     def __repr__(self):
         return f'<Complaint {self.complaint_id} ({self.status})>'
+    
 # --- NEW: Local Authority Model ---
 class LocalAuthority(db.Model):
     __tablename__ = 'local_authority'
@@ -90,3 +88,19 @@ class ForumComment(db.Model):
 
     def __repr__(self):
         return f'<ForumComment {self.comment_id}>'
+
+# --- NEW: Event Model ---
+class Event(db.Model):
+    __tablename__ = 'event'
+
+    event_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    location = db.Column(db.String(255), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+
+    # This will link to the admin or authority who posted the event
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Event {self.name}>'

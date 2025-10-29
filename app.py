@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+import os
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps 
-from models import db, User, Complaint, LocalAuthority, ForumPost, ForumComment
+from models import db, User, Complaint, LocalAuthority, ForumPost, ForumComment, Event
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -10,6 +12,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-very-secret-key-change-this' 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/locality_issue_hub'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# --- File Upload Configuration ---
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static/uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 # --- Initialize Database ---
 db.init_app(app)
@@ -41,6 +47,10 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# --- Helper Functions ---
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 # --- Routes ---
 
 @app.route('/')
@@ -72,11 +82,33 @@ def submit_complaint():
     if request.method == 'POST':
         location = request.form.get('location')
         description = request.form.get('description')
+        image_filename = None # Default to None
+
+        # --- Check for image file ---
+        if 'image' in request.files:
+            file = request.files['image']
+
+            # If the user submitted a file and it's valid
+            if file.filename != '' and allowed_file(file.filename):
+                # 1. Create a secure filename
+                filename = secure_filename(file.filename)
+                # 2. Save the file to our /static/uploads folder
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # 3. Store just the filename in the database
+                image_filename = filename 
+            elif file.filename != '':
+                # User uploaded a file, but it's the wrong type
+                flash('Invalid file type. Only PNG, JPG, and JPEG are allowed.', 'danger')
+                return redirect(request.url)
+
+        # --- Create the new complaint with the image filename ---
         new_complaint = Complaint(
             location=location,
             description=description,
-            user_id=session['user_id']
+            user_id=session['user_id'],
+            image_filename=image_filename # Add the filename here
         )
+
         try:
             db.session.add(new_complaint)
             db.session.commit()
@@ -86,6 +118,7 @@ def submit_complaint():
             db.session.rollback()
             flash(f'An error occurred: {e}', 'danger')
             return redirect(url_for('submit_complaint'))
+
     return render_template('submit_complaint.html')
 
 # --- Admin Dashboard Route ---
@@ -228,16 +261,111 @@ def directory():
     return render_template('directory.html', contacts=all_contacts)
 
 
-# --- NEW: Forum Homepage (Placeholder) ---
+# --- UPDATED: Forum Homepage ---
 @app.route('/forum')
 @login_required
 def forum():
     """
-    Displays the main forum page (placeholder).
+    Displays the main forum page with a list of all posts.
     """
-    # We will build this page in the next step
-    # For now, it just shows text
-    return render_template('forum.html') # We will create this file next
+    # Query the database for all posts, ordering by the newest first
+    all_posts = ForumPost.query.order_by(ForumPost.date_posted.desc()).all()
+
+    # Pass the list of posts to the template
+    return render_template('forum.html', posts=all_posts)
+# --- NEW: Create Post Route ---
+@app.route('/forum/new_post', methods=['GET', 'POST'])
+@login_required
+def create_post():
+    """
+    Handles creating a new forum post.
+    GET: Shows the create post form.
+    POST: Handles the form submission and saves to the DB.
+    """
+    if request.method == 'POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+
+        if not title or not content:
+            flash('Title and content are required.', 'danger')
+            return redirect(url_for('create_post'))
+
+        # Create a new post object
+        new_post = ForumPost(
+            title=title,
+            content=content,
+            user_id=session['user_id'] # Assign to the logged-in user
+        )
+
+        try:
+            db.session.add(new_post)
+            db.session.commit()
+            flash('Post created successfully!', 'success')
+            return redirect(url_for('forum')) # Redirect back to the main forum page
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An error occurred: {e}', 'danger')
+
+    # If it's a GET request, just show the form
+    return render_template('create_post.html')
+
+# --- NEW: Post Detail Page (View Post & Add Comment) ---
+@app.route('/forum/post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def post_detail(post_id):
+    """
+    GET: Shows a single post and all its comments.
+    POST: Handles adding a new comment to that post.
+    """
+    # Find the post by its ID, or return a 404 error
+    post = ForumPost.query.get_or_404(post_id)
+
+    if request.method == 'POST':
+        # This is an "Add Comment" submission
+        content = request.form.get('content')
+
+        if not content:
+            flash('Comment content cannot be empty.', 'danger')
+        else:
+            new_comment = ForumComment(
+                content=content,
+                user_id=session['user_id'], # Logged-in user
+                post_id=post.post_id        # This specific post
+            )
+            try:
+                db.session.add(new_comment)
+                db.session.commit()
+                flash('Comment added successfully!', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash(f'An error occurred: {e}', 'danger')
+
+        # Redirect back to the same page (refreshes the comment list)
+        return redirect(url_for('post_detail', post_id=post.post_id))
+
+    # If it's a GET request, just show the post and its comments
+    return render_template('post_detail.html', post=post)
+
+# --- NEW: Event Calendar (Public Page) ---
+@app.route('/events')
+@login_required
+def events_calendar():
+    """
+    Displays the public event calendar.
+    """
+    # Placeholder
+    return render_template('events_calendar.html') # We will create this
+
+# --- NEW: Admin Event Management ---
+@app.route('/admin/events', methods=['GET', 'POST'])
+@admin_required
+def admin_events():
+    """
+    Admin page to add and delete events.
+    """
+    # Placeholder
+    return render_template('admin_events.html') # We will create this
+
 
 # --- Authentication Routes ---
 

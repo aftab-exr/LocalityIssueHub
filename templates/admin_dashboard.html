@@ -21,6 +21,7 @@
                     <th scope="col">Submitted By</th>
                     <th scope="col">Location</th>
                     <th scope="col">Description</th>
+                    <th scope="col">Image</th>
                     <th scope="col">Status</th>
                     <th scope="col" style="width: 200px;">Update Status</th>
                 </tr>
@@ -33,6 +34,16 @@
                     <td>{{ user.name }} ({{ user.email }})</td>
                     <td>{{ complaint.location }}</td>
                     <td>{{ complaint.description }}</td>
+
+                    <td>
+                        {% if complaint.image_filename %}
+                        <a href="{{ url_for('static', filename='uploads/' + complaint.image_filename) }}"
+                            target="_blank">View</a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+
                     <td>
                         {% if complaint.status == 'Pending' %}
                         <span class="badge bg-warning text-dark">{{ complaint.status }}</span>
@@ -51,7 +62,7 @@
                                 </option>
                                 <option value="In-Progress" {% if complaint.status=='In-Progress' %}selected{% endif %}>
                                     In-Progress</option>
-                                <option value="Resolved" {% if complaint.status=='Resolved' %}selected{% endif %}>
+                                <option value.="Resolved" {% if complaint.status=='Resolved' %}selected{% endif %}>
                                     Resolved</option>
                             </select>
                             <button type="submit" class="btn btn-primary btn-sm">Update</button>
