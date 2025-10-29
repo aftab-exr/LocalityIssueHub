@@ -5,13 +5,13 @@
 {% block content %}
 <h2 class="mb-4">Admin Reports</h2>
 
-<h4 class="mb-3">Complaint Status Report</h4>
+<h4 class="mb-3"><i class="bi bi-bar-chart-line-fill"></i> Complaint Status Report</h4>
 <hr>
 
 <div class="row">
     <div class="col-md-4">
         <div class="card text-white bg-warning mb-3">
-            <div class="card-header fs-5">Pending Complaints</div>
+            <div class="card-header fs-5"><i class="bi bi-clock-history"></i> Pending</div>
             <div class="card-body text-center">
                 <h1 class="card-title display-3">{{ report_data.pending }}</h1>
             </div>
@@ -20,7 +20,7 @@
 
     <div class="col-md-4">
         <div class="card text-white bg-info mb-3">
-            <div class="card-header fs-5">In-Progress Complaints</div>
+            <div class="card-header fs-5"><i class="bi bi-arrow-repeat"></i> In-Progress</div>
             <div class="card-body text-center">
                 <h1 class="card-title display-3">{{ report_data.in_progress }}</h1>
             </div>
@@ -29,49 +29,49 @@
 
     <div class="col-md-4">
         <div class="card text-white bg-success mb-3">
-            <div class="card-header fs-5">Resolved Complaints</div>
+            <div class="card-header fs-5"><i class="bi bi-check-circle-fill"></i> Resolved</div>
             <div class="card-body text-center">
                 <h1 class="card-title display-3">{{ report_data.resolved }}</h1>
             </div>
         </div>
     </div>
 </div>
-...
 
-
-<h4 class="mb-3 mt-5">User Activity Report</h4>
+<h4 class="mb-3 mt-5"><i class="bi bi-people-fill"></i> User Activity Report</h4>
 <hr>
 
 <div class="card">
     <div class="card-body">
-        <table class="table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th scope="col">User ID</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Role</th>
-                    <th scope="col">Total Complaints Submitted</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user_report in user_activity_data %}
-                <tr>
-                    <td>{{ user_report.user_id }}</td>
-                    <td>{{ user_report.name }}</td>
-                    <td>{{ user_report.email }}</td>
-                    <td>
-                        {% if user_report.role == 'admin' %}
-                        <span class="badge bg-danger">{{ user_report.role }}</span>
-                        {% else %}
-                        <span class="badge bg-secondary">{{ user_report.role }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="fw-bold">{{ user_report.complaint_count }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">User ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Total Complaints</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_report in user_activity_data %}
+                    <tr>
+                        <td>{{ user_report.user_id }}</td>
+                        <td>{{ user_report.name }}</td>
+                        <td>{{ user_report.email }}</td>
+                        <td>
+                            {% if user_report.role == 'admin' %}
+                            <span class="badge bg-danger">{{ user_report.role }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ user_report.role }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold text-center">{{ user_report.complaint_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

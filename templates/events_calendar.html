@@ -6,26 +6,37 @@
 <h2 class="mb-4">Community Events Calendar</h2>
 <p class="lead mb-4">See what's happening in your locality. Get involved!</p>
 
-<div class="list-group">
+<div class="row">
     {% if events %}
     {% for event in events %}
-    <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 border rounded">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ event.name }}</h5>
-            <span class="badge bg-primary rounded-pill fs-6">
-                {{ event.date.strftime('%B %d, %Y at %I:%M %p') }}
-            </span>
+    <div class="col-md-6 col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header fs-5 fw-bold d-flex justify-content-between align-items-center">
+                <span class="text-primary"><i class="bi bi-calendar-event-fill"></i> {{ event.name }}</span>
+                <span class="badge bg-primary rounded-pill">
+                    {{ event.date.strftime('%b %d, %Y') }}
+                </span>
+            </div>
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2">
+                    <strong><i class="bi bi-clock-fill"></i> Time:</strong> {{ event.date.strftime('%I:%M %p') }}
+                </h6>
+                <h6 class="card-subtitle mb-3">
+                    <strong><i class="bi bi-geo-alt-fill"></i> Location:</strong> {{ event.location }}
+                </h6>
+                <hr>
+                <p class="card-text" style="white-space: pre-wrap;">{{ event.description }}</p>
+            </div>
         </div>
-        <p class="mb-1"><strong>Location:</strong> {{ event.location }}</p>
-        <hr class="my-2">
-        <p class.="mb-1" style="white-space: pre-wrap;">{{ event.description }}</p>
     </div>
     {% endfor %}
     {% else %}
-    <div class="card">
-        <div class="card-body text-center text-muted">
-            <p class="fs-4">No upcoming events.</p>
-            <p>Please check back later!</p>
+    <div class="col">
+        <div class="card text-center">
+            <div class="card-body">
+                <h4 class="card-title">No Upcoming Events</h4>
+                <p class="text-muted fs-5">Please check back later!</p>
+            </div>
         </div>
     </div>
     {% endif %}
