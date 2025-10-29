@@ -1,31 +1,40 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Locality Issue Hub{% endblock %}
+{% block title %}Welcome - Locality Issue Hub{% endblock %}
 
 {% block content %}
-<div class="p-5 mb-4 bg-light rounded-3">
-    <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">Welcome to the Locality Issue Hub</h1>
-        <p class="col-md-8 fs-4">
-            Report issues in your area, connect with authorities, and build a better community.
+
+<div class="hero-section text-center text-white mb-5">
+    <div class="hero-overlay"></div>
+
+    <div class="container hero-content">
+        <h1 class="display-4 fw-bold">Report Local Issues. Build a Better Community.</h1>
+        <p class="lead my-4">
+            Your voice matters. Submit complaints, track resolutions, and connect with your local authorities.
         </p>
-
-        {% if not session['user_id'] %}
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
-            Get Started - Register Now
-        </a>
-        {% else %}
-        {% if session['user_role'] == 'admin' %}
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary btn-lg">
-            Go to Admin Dashboard
-        </a>
-        {% else %}
-        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
-            Go to Your Dashboard
-        </a>
-        {% endif %}
-        {% endif %}
-
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Login</a>
     </div>
 </div>
+
+<div class="container">
+    <div class="row text-center">
+        <div class="col-md-4">
+            <i class="bi bi-flag-fill"></i>
+            <h3 class_("mt-3">Report Issues</h3>
+            <p class="lead text-muted">Easily submit complaints with details and optional photos.</p>
+        </div>
+        <div class="col-md-4">
+            <i class="bi bi-graph-up-arrow"></i>
+            <h3 class_("mt-3">Track Progress</h3>
+            <p class="lead text-muted">See the status of your submissions in real-time.</p>
+        </div>
+        <div class="col-md-4">
+            <i class="bi bi-people-fill"></i>
+            <h3 class_("mt-3">Get Involved</h3>
+            <p class="lead text-muted">Join forum discussions and see community events.</p>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
