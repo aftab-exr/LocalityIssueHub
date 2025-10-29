@@ -8,41 +8,46 @@
 
 <div class="row">
     {% if contacts %}
-        {% for contact in contacts %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header fs-5 fw-bold">
-                    {{ contact.dept_name }}
-                </div>
-                <div class="card-body">
-                    {% if contact.contact_name %}
-                        <h6 class="card-title">{{ contact.contact_name }}</h6>
-                    {% endif %}
+    {% for contact in contacts %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header fs-5 fw-bold">
+                <i class="bi bi-building"></i> {{ contact.dept_name }}
+            </div>
+            <div class="card-body">
+                {% if contact.contact_name %}
+                <h6 class="card-title"><i class="bi bi-person-fill"></i> {{ contact.contact_name }}</h6>
+                {% endif %}
 
-                    <p class="card-text mb-1">
-                        <strong>Phone:</strong> {{ contact.phone }}
-                    </p>
+                <p class="card-text mb-1">
+                    <strong><i class="bi bi-telephone-fill"></i> Phone:</strong> {{ contact.phone }}
+                </p>
 
-                    {% if contact.email %}
-                    <p class="card-text mb-1">
-                        <strong>Email:</strong> {{ contact.email }}
-                    </p>
-                    {% endif %}
+                {% if contact.email %}
+                <p class="card-text mb-1">
+                    <strong><i class="bi bi-envelope-fill"></i> Email:</strong> {{ contact.email }}
+                </p>
+                {% endif %}
 
-                    {% if contact.address %}
-                    <p class="card-text mt-3">
-                        <strong>Address:</strong><br>
-                        {{ contact.address }}
-                    </p>
-                    {% endif %}
-                </div>
+                {% if contact.address %}
+                <p class="card-text mt-3">
+                    <strong><i class="bi bi-geo-alt-fill"></i> Address:</strong><br>
+                    {{ contact.address }}
+                </p>
+                {% endif %}
             </div>
         </div>
-        {% endfor %}
+    </div>
+    {% endfor %}
     {% else %}
-        <div class="col">
-            <p class="text-center text-muted fs-4">The directory is empty. Contacts will be added by an administrator soon.</p>
+    <div class="col">
+        <div class="card text-center">
+            <div class="card-body">
+                <h4 class="card-title">Directory is Empty</h4>
+                <p class="text-muted fs-5">Contacts will be added by an administrator soon.</p>
+            </div>
         </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

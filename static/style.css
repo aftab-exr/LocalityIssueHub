@@ -37,3 +37,9 @@
     color: var(--bs-primary);
     margin-bottom: 1rem;
 }
+
+/* --- Button Refinements --- */
+.btn:hover {
+    text-decoration: none;
+    /* Removes underline on hover */
+}
